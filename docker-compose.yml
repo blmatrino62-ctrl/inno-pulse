@@ -1,0 +1,16 @@
+# Dev stack: FastAPI + EC2 Postgres.
+# The frontend runs via `npm run dev` (Vite) and proxies /api to :8000.
+
+services:
+  api:
+    build:
+      context: ./backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://admin:admin123@15.237.137.224:5432/postgres
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      ENVIRONMENT: development
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

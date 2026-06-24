@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --topbar: #0b1437;
+  --topbar-text: #e2e8f0;
+  --accent: #3b82f6;
+}
+
+.dark {
+  --bg: #060b20;
+  --surface: #111c44;
+  --surface-2: #1b254b;
+  --border: #1f2a52;
+  --text: #e2e8f0;
+  --text-muted: #8a96b8;
+  --topbar: #0b1437;
+  --topbar-text: #e2e8f0;
+  --accent: #60a5fa;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border;
+    background: var(--surface);
+    border-color: var(--border);
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+}
+
+/* loading skeleton shimmer */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--border) 37%,
+    var(--surface-2) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}

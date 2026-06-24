@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m py_compile app/main.py app/database.py app/models/entities.py app/routers/kpi.py app/routers/signals.py app/routers/reviews.py app/routers/catalog.py app/routers/export.py app/seed.py app/core/config.py alembic/env.py alembic/versions/0001_initial.py)",
+      "PowerShell($py = \\(Get-Command python -ErrorAction SilentlyContinue\\); if \\($py\\) { python --version } else { Write-Output \"no python\"; $p3 = \\(Get-Command py -ErrorAction SilentlyContinue\\); if \\($p3\\) { py --version } else { Write-Output \"no py launcher\" } })",
+      "PowerShell(cd C:\\\\Users\\\\user\\\\Projects\\\\inno-pulse\\\\frontend; npx tsc --noEmit 2>&1 | Select-Object -First 40; Write-Output \"EXIT:$LASTEXITCODE\")",
+      "Bash(cd /c/Users/user/Projects/inno-pulse && find . -type f -not -path '*/node_modules/*' -not -path '*/__pycache__/*' -not -path '*/dist/*' | sort)",
+      "Bash(cd /c/Users/user/Projects/inno-pulse/frontend && rm -f vite.config.js vite.config.d.ts tsconfig.tsbuildinfo tsconfig.node.tsbuildinfo && echo \"cleaned\")"
+    ]
+  }
+}

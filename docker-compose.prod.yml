@@ -1,0 +1,40 @@
+# Production stack for EC2 (15.237.137.224)
+# Both api and nginx run as Docker containers.
+# DB is on the same EC2 host — reached via host-gateway.
+#
+# Deploy steps (on EC2):
+#   1. scp project + frontend/dist to /opt/inno-pulse
+#   2. cd /opt/inno-pulse
+#   3. docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://admin:admin123@host.docker.internal:5432/postgres
+      CORS_ORIGINS: http://15.237.137.224
+      ENVIRONMENT: production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+    networks:
+      - internal
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/dist:/var/www/inno-pulse:ro
+    depends_on:
+      - api
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge

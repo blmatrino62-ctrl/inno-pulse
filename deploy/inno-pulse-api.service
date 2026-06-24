@@ -1,0 +1,23 @@
+# systemd unit for the Inno-Pulse FastAPI backend
+# Install to /etc/systemd/system/inno-pulse-api.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now inno-pulse-api
+
+[Unit]
+Description=Inno-Pulse FastAPI (uvicorn)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/inno-pulse/backend
+EnvironmentFile=/opt/inno-pulse/backend/.env
+ExecStart=/opt/inno-pulse/backend/.venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 --port 8000 --workers 4
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

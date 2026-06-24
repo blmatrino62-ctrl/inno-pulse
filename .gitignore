@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# env (never commit passwords)
+.env
+.env.*
+backend/.env
+backend/.env.*
+
+# Node
+node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+# tsc -b artifacts from the composite node config
+frontend/vite.config.js
+frontend/vite.config.d.ts
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
