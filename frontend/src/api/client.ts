@@ -1,6 +1,6 @@
 import type { Filters } from "@/types";
 
-const BASE = "/api";
+const BASE = `${import.meta.env.BASE_URL}api`;
 
 export function filtersToParams(
   f: Filters,
