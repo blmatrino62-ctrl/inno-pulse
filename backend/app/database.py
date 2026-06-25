@@ -12,6 +12,7 @@ engine = create_async_engine(
     settings.database_url,
     echo=settings.environment == "development",
     pool_pre_ping=True,
+    connect_args={"server_settings": {"client_encoding": "UTF8"}},
 )
 
 AsyncSessionLocal = async_sessionmaker(
