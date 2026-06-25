@@ -1,26 +1,26 @@
-from pydantic import BaseModel
+from app.schemas.common import FixedModel
 
 
-class IngredientOut(BaseModel):
+class IngredientOut(FixedModel):
     name: str
     post_count: int
     reaction_count: int
     drug_category: str | None
 
 
-class SourceOut(BaseModel):
+class SourceOut(FixedModel):
     name: str
     reaction_count: int
     post_count: int
 
 
-class PtNode(BaseModel):
+class PtNode(FixedModel):
     pt: str
     reaction_count: int
     serious_count: int
 
 
-class SocNode(BaseModel):
+class SocNode(FixedModel):
     soc: str
     pt_count: int
     reaction_count: int
@@ -28,7 +28,7 @@ class SocNode(BaseModel):
     pts: list[PtNode] = []
 
 
-class TrendPoint(BaseModel):
+class TrendPoint(FixedModel):
     month: str
     source: str
     count: int

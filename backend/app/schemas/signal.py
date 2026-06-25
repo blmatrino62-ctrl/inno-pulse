@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from app.schemas.common import FixedModel
 
 
-class AeRow(BaseModel):
+class AeRow(FixedModel):
     id: int
     drug_ingredient: str | None
     drug_brand_name: str | None
@@ -16,7 +16,7 @@ class AeRow(BaseModel):
     text: str | None
 
 
-class PostRow(BaseModel):
+class PostRow(FixedModel):
     id: int
     drug_ingredient: str | None
     drug_brand_name: str | None
