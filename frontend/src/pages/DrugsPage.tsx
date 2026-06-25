@@ -1,76 +1,72 @@
+import { useNavigate } from "react-router-dom";
+
 import { useIngredients } from "@/api/hooks";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-const CATEGORY_LABEL: Record<string, string> = {
-  mood: "Mood / Psychiatry",
-  adhd: "ADHD",
-  anxiety: "Anxiety",
-  gi: "Gastrointestinal",
-  immune: "Immune",
-  infective: "Infective",
-  neuro: "Neurology",
-  diabetes: "Diabetes",
-  hormonal: "Hormonal",
-  respiratory: "Respiratory",
-  pain: "Pain",
-  bone: "Bone",
-  other: "Other",
-};
-
 export function DrugsPage() {
   const { data, isLoading } = useIngredients();
+  const navigate = useNavigate();
 
-  // Group by drug_category
-  const grouped = (data ?? []).reduce<Record<string, typeof data>>((acc, ing) => {
-    const cat = ing.drug_category ?? "other";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat]!.push(ing);
-    return acc;
-  }, {});
+  const handleClick = (name: string) => {
+    navigate(`/reactions?drug_ingredient=${encodeURIComponent(name)}`);
+  };
+
+  // Group alphabetically by first letter
+  const grouped = (data ?? [])
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .reduce<Record<string, typeof data>>((acc, ing) => {
+      const letter = ing.name[0]?.toUpperCase() ?? "#";
+      if (!acc[letter]) acc[letter] = [];
+      acc[letter]!.push(ing);
+      return acc;
+    }, {});
 
   return (
     <ErrorBoundary>
       <div className="mb-4 flex items-baseline gap-3">
-        <h1 className="text-lg font-semibold">Drugs — INN → reactions</h1>
+        <h1 className="text-lg font-semibold">Drugs — INN</h1>
         {data && (
-          <span className="muted text-sm">
-            {data.length} ingredients · {Object.keys(grouped).length} categories
-          </span>
+          <span className="muted text-sm">{data.length} ingredients</span>
         )}
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="card p-4">
-              <Skeleton className="mb-2 h-4 w-32" />
-              <Skeleton className="h-3 w-48" />
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-6">
+          {Array.from({ length: 18 }).map((_, i) => (
+            <div key={i} className="card p-3">
+              <Skeleton className="mb-1 h-4 w-24" />
+              <Skeleton className="h-3 w-16" />
             </div>
           ))}
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {Object.entries(grouped)
-            .sort(([, a], [, b]) => (b?.length ?? 0) - (a?.length ?? 0))
-            .map(([cat, ings]) => (
-              <div key={cat}>
-                <h2 className="muted mb-2 text-xs font-semibold uppercase tracking-wide">
-                  {CATEGORY_LABEL[cat] ?? cat} ({ings?.length ?? 0})
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([letter, ings]) => (
+              <div key={letter}>
+                <h2
+                  className="mb-2 text-xs font-bold uppercase tracking-widest"
+                  style={{ color: "var(--accent)" }}
+                >
+                  {letter}
                 </h2>
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-6">
                   {ings?.map((ing) => (
-                    <div
+                    <button
                       key={ing.name}
-                      className="card p-3"
+                      onClick={() => handleClick(ing.name)}
+                      className="card p-3 text-left transition-colors hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                     >
-                      <div className="truncate font-medium capitalize text-sm">
+                      <div className="truncate font-medium text-sm capitalize">
                         {ing.name}
                       </div>
                       <div className="muted mt-1 text-[10px]">
                         {ing.post_count} posts · {ing.reaction_count} AE
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>

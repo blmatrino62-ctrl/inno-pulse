@@ -7,8 +7,6 @@ const TABS = [
   { to: "/reactions", label: "Reactions" },
   { to: "/reviews", label: "Reviews" },
   { to: "/drugs", label: "Drugs" },
-  { to: "/sources", label: "Sources" },
-  { to: "/reports", label: "Reports" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {

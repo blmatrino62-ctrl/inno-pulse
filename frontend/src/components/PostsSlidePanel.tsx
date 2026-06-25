@@ -1,4 +1,24 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+function ExpandablePostText({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const short = text.length > 160;
+  return (
+    <p className="text-xs muted leading-relaxed">
+      {short && !expanded ? text.slice(0, 160) + "…" : text}
+      {short && (
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          className="ml-1 font-medium"
+          style={{ color: "var(--accent)" }}
+        >
+          {expanded ? "less" : "more"}
+        </button>
+      )}
+    </p>
+  );
+}
 
 import { apiGet, filtersToParams } from "@/api/client";
 import { useFilters } from "@/hooks/useFilters";
@@ -58,9 +78,7 @@ function PostCard({ post }: { post: PostRow }) {
         </div>
       )}
 
-      {post.text && (
-        <p className="text-xs muted line-clamp-3 leading-relaxed">{post.text}</p>
-      )}
+      {post.text && <ExpandablePostText text={post.text} />}
     </div>
   );
 }

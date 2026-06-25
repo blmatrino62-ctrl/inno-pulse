@@ -5,6 +5,26 @@ import { useFilters } from "@/hooks/useFilters";
 import { QueryError } from "./ErrorBoundary";
 import { TableSkeleton } from "./ui/Skeleton";
 
+function ExpandableText({ text }: { text: string | null }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!text) return <span className="muted">—</span>;
+  const short = text.length > 120;
+  return (
+    <span>
+      {short && !expanded ? text.slice(0, 120) + "…" : text}
+      {short && (
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          className="ml-1 text-[10px] font-medium"
+          style={{ color: "var(--accent)" }}
+        >
+          {expanded ? "less" : "more"}
+        </button>
+      )}
+    </span>
+  );
+}
+
 const PAGE_SIZE = 50;
 
 export function ReviewsTab() {
@@ -82,8 +102,8 @@ export function ReviewsTab() {
                       )}
                     </div>
                   </td>
-                  <td className="muted max-w-[280px] truncate px-3 py-2">
-                    {r.text}
+                  <td className="muted max-w-[280px] px-3 py-2 text-xs leading-relaxed">
+                    <ExpandableText text={r.text} />
                   </td>
                 </tr>
               ))}

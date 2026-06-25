@@ -36,10 +36,15 @@ export function FilterPanel() {
   const { data: ingredients } = useIngredients();
   const { data: sources } = useSources();
   const [ingSearch, setIngSearch] = useState("");
+  const [ingOpen, setIngOpen] = useState(false);
 
-  const filteredIngs = ingredients?.filter((i) =>
-    i.name.toLowerCase().includes(ingSearch.toLowerCase()),
-  );
+  const filteredIngs = (
+    ingSearch
+      ? ingredients?.filter((i) =>
+          i.name.toLowerCase().includes(ingSearch.toLowerCase()),
+        )
+      : ingredients?.slice().sort((a, b) => b.post_count - a.post_count)
+  )?.filter((i) => !filters.drug_ingredient.includes(i.name));
 
   const toggleArr = <K extends "drug_ingredient" | "drug_brand_name" | "severity">(
     key: K,
@@ -68,15 +73,18 @@ export function FilterPanel() {
             <input
               value={ingSearch}
               onChange={(e) => setIngSearch(e.target.value)}
-              placeholder={`All ingredients (${ingredients?.length ?? "…"})`}
-              className="w-48 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs"
+              onFocus={() => setIngOpen(true)}
+              onBlur={() => setTimeout(() => setIngOpen(false), 150)}
+              placeholder={`Search (${ingredients?.length ?? "…"})`}
+              className="w-52 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs"
             />
-            {ingSearch && filteredIngs && filteredIngs.length > 0 && (
-              <div className="absolute z-30 mt-0.5 max-h-48 w-full overflow-y-auto rounded-md border border-[var(--border)] bg-[var(--surface)] shadow-lg">
-                {filteredIngs.slice(0, 30).map((i) => (
+            {ingOpen && filteredIngs && filteredIngs.length > 0 && (
+              <div className="absolute z-30 mt-0.5 max-h-56 w-full overflow-y-auto rounded-md border border-[var(--border)] bg-[var(--surface)] shadow-lg">
+                {filteredIngs.slice(0, 40).map((i) => (
                   <button
                     key={i.name}
-                    className="w-full px-2 py-1 text-left text-xs hover:bg-[var(--surface-2)]"
+                    className="w-full px-2 py-1.5 text-left text-xs hover:bg-[var(--surface-2)]"
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => {
                       toggleArr("drug_ingredient", i.name);
                       setIngSearch("");
