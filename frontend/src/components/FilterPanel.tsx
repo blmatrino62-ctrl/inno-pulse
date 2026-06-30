@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useIngredients, useSources } from "@/api/hooks";
+import { useBrands, useIngredients, useSources } from "@/api/hooks";
 import { useFilters } from "@/hooks/useFilters";
 import { ExportButton } from "./ExportButton";
 
@@ -34,9 +34,12 @@ function Toggle({
 export function FilterPanel() {
   const { filters, patch, reset } = useFilters();
   const { data: ingredients } = useIngredients();
+  const { data: brands } = useBrands();
   const { data: sources } = useSources();
   const [ingSearch, setIngSearch] = useState("");
   const [ingOpen, setIngOpen] = useState(false);
+  const [brandSearch, setBrandSearch] = useState("");
+  const [brandOpen, setBrandOpen] = useState(false);
 
   const filteredIngs = (
     ingSearch
@@ -45,6 +48,14 @@ export function FilterPanel() {
         )
       : ingredients?.slice().sort((a, b) => b.post_count - a.post_count)
   )?.filter((i) => !filters.drug_ingredient.includes(i.name));
+
+  const filteredBrands = (
+    brandSearch
+      ? brands?.filter((b) =>
+          b.name.toLowerCase().includes(brandSearch.toLowerCase()),
+        )
+      : brands
+  )?.filter((b) => !filters.drug_brand_name.includes(b.name));
 
   const toggleArr = <K extends "drug_ingredient" | "drug_brand_name" | "severity">(
     key: K,
@@ -105,6 +116,50 @@ export function FilterPanel() {
               >
                 {v}
                 <button onClick={() => toggleArr("drug_ingredient", v)}>×</button>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Brand multiselect */}
+        <div className="flex items-start gap-2">
+          <span className="muted mt-1.5 text-xs font-semibold uppercase">Brand</span>
+          <div className="relative">
+            <input
+              value={brandSearch}
+              onChange={(e) => setBrandSearch(e.target.value)}
+              onFocus={() => setBrandOpen(true)}
+              onBlur={() => setTimeout(() => setBrandOpen(false), 150)}
+              placeholder={`Search (${brands?.length ?? "…"})`}
+              className="w-44 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs"
+            />
+            {brandOpen && filteredBrands && filteredBrands.length > 0 && (
+              <div className="absolute z-30 mt-0.5 max-h-56 w-full overflow-y-auto rounded-md border border-[var(--border)] bg-[var(--surface)] shadow-lg">
+                {filteredBrands.slice(0, 40).map((b) => (
+                  <button
+                    key={b.name}
+                    className="w-full px-2 py-1.5 text-left text-xs hover:bg-[var(--surface-2)]"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                      toggleArr("drug_brand_name", b.name);
+                      setBrandSearch("");
+                    }}
+                  >
+                    <span className="font-medium">{b.name}</span>
+                    <span className="muted ml-1">({b.post_count})</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {filters.drug_brand_name.map((v) => (
+              <span
+                key={v}
+                className="inline-flex items-center gap-1 rounded-md bg-violet-500/15 px-2 py-0.5 text-xs text-violet-600 dark:text-violet-300"
+              >
+                {v}
+                <button onClick={() => toggleArr("drug_brand_name", v)}>×</button>
               </span>
             ))}
           </div>

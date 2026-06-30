@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type {
   AeRow,
+  BrandOut,
   Filters,
   IngredientOut,
   Kpi,
@@ -9,6 +10,7 @@ import type {
   PostRow,
   SocNode,
   SourceOut,
+  TopReaction,
   TrendPoint,
 } from "@/types";
 import { apiGet, filtersToParams } from "./client";
@@ -67,6 +69,22 @@ export function useMedDRATree(f: Filters) {
   return useQuery({
     queryKey: ["meddra-tree", f],
     queryFn: () => apiGet<SocNode[]>("/meddra-tree", filtersToParams(f)),
+    staleTime: STALE,
+  });
+}
+
+export function useBrands() {
+  return useQuery({
+    queryKey: ["brands"],
+    queryFn: () => apiGet<BrandOut[]>("/brands"),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useTopReactions(f: Filters) {
+  return useQuery({
+    queryKey: ["top-reactions", f],
+    queryFn: () => apiGet<TopReaction[]>("/top-reactions", filtersToParams(f)),
     staleTime: STALE,
   });
 }

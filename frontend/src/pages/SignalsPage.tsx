@@ -5,6 +5,7 @@ import { FilterPanel } from "@/components/FilterPanel";
 import { KpiCards } from "@/components/KpiCards";
 import { MedDRATree } from "@/components/MedDRATree";
 import { PostsSlidePanel } from "@/components/PostsSlidePanel";
+import { TopReactionsChart } from "@/components/TopReactionsChart";
 
 export function SignalsPage() {
   const [selectedPt, setSelectedPt] = useState<string | null>(null);
@@ -14,14 +15,21 @@ export function SignalsPage() {
       <FilterPanel />
       <KpiCards />
       <div className="mt-4 flex gap-4 items-start">
-        <div
-          className="min-w-0 transition-all duration-300"
-          style={{ flex: selectedPt ? "0 0 58%" : "1 1 100%" }}
-        >
+        {/* Left column: top reactions chart */}
+        {!selectedPt && (
+          <div className="w-64 flex-shrink-0">
+            <TopReactionsChart />
+          </div>
+        )}
+
+        {/* Center: MedDRA tree */}
+        <div className="flex-1 min-w-0">
           <MedDRATree selectedPt={selectedPt} onSelectPt={setSelectedPt} />
         </div>
+
+        {/* Right: slide panel when PT selected */}
         {selectedPt && (
-          <div className="flex-1 min-w-0">
+          <div className="w-80 flex-shrink-0">
             <PostsSlidePanel pt={selectedPt} onClose={() => setSelectedPt(null)} />
           </div>
         )}

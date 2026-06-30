@@ -1,16 +1,20 @@
 import type { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
+import { logout } from "@/pages/LoginPage";
 import { useTheme } from "@/hooks/useTheme";
 
 const TABS = [
   { to: "/reactions", label: "Reactions" },
   { to: "/reviews", label: "Reviews" },
   { to: "/drugs", label: "Drugs" },
+  { to: "/notifications", label: "🔔 Alerts" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { theme, toggle } = useTheme();
+  const navigate = useNavigate();
+  const handleLogout = () => { logout(); navigate("/login", { replace: true }); };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -68,9 +72,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             {theme === "dark" ? "☀️" : "🌙"}
           </button>
-          <div className="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-sm font-semibold">
+          <button
+            onClick={handleLogout}
+            title="Выйти"
+            className="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-sm font-semibold hover:bg-blue-600 transition-colors"
+          >
             IP
-          </div>
+          </button>
         </div>
       </header>
 

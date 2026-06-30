@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.routers.filters import VIEW, CommonFilters, build_conditions, common_filters, where_from
-from app.schemas.catalog import IngredientOut, PtNode, SocNode, SourceOut, TrendPoint
+from app.schemas.catalog import BrandOut, IngredientOut, PtNode, SocNode, SourceOut, TopReaction, TrendPoint
 
 router = APIRouter(prefix="/api", tags=["catalog"])
 
@@ -113,6 +113,48 @@ async def get_meddra_tree(
         SocNode(**d)
         for d in sorted(soc_map.values(), key=lambda d: -d["reaction_count"])
     ]
+
+
+@router.get("/brands", response_model=list[BrandOut])
+async def list_brands(db: AsyncSession = Depends(get_db)) -> list[BrandOut]:
+    rows = (
+        await db.execute(
+            text(f"""
+                SELECT
+                    drug_brand_name         AS name,
+                    count(DISTINCT id)      AS post_count
+                FROM {VIEW}
+                WHERE drug_brand_name IS NOT NULL
+                GROUP BY drug_brand_name
+                ORDER BY post_count DESC
+                LIMIT 200
+            """)
+        )
+    ).all()
+    return [BrandOut(name=r.name, post_count=r.post_count) for r in rows]
+
+
+@router.get("/top-reactions", response_model=list[TopReaction])
+async def top_reactions(
+    db: AsyncSession = Depends(get_db),
+    f: CommonFilters = Depends(common_filters),
+) -> list[TopReaction]:
+    conds, params = build_conditions(f)
+    all_conds = [*conds, "meddra_pt IS NOT NULL"]
+    where = where_from(all_conds)
+    rows = (
+        await db.execute(
+            text(f"""
+                SELECT meddra_pt AS pt, count(*) AS reaction_count
+                FROM {VIEW} {where}
+                GROUP BY meddra_pt
+                ORDER BY reaction_count DESC
+                LIMIT 10
+            """),
+            params,
+        )
+    ).all()
+    return [TopReaction(pt=r.pt, reaction_count=r.reaction_count) for r in rows]
 
 
 @router.get("/trends", response_model=list[TrendPoint])

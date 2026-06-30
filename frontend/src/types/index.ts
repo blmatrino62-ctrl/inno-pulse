@@ -45,6 +45,16 @@ export interface PostRow {
   reactions: string[];
 }
 
+export interface BrandOut {
+  name: string;
+  post_count: number;
+}
+
+export interface TopReaction {
+  pt: string;
+  reaction_count: number;
+}
+
 export interface IngredientOut {
   name: string;
   post_count: number;

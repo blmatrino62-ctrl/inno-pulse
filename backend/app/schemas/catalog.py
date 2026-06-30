@@ -1,6 +1,16 @@
 from app.schemas.common import FixedModel
 
 
+class BrandOut(FixedModel):
+    name: str
+    post_count: int
+
+
+class TopReaction(FixedModel):
+    pt: str
+    reaction_count: int
+
+
 class IngredientOut(FixedModel):
     name: str
     post_count: int
