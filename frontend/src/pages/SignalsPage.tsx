@@ -5,6 +5,7 @@ import { FilterPanel } from "@/components/FilterPanel";
 import { KpiCards } from "@/components/KpiCards";
 import { MedDRATree } from "@/components/MedDRATree";
 import { PostsSlidePanel } from "@/components/PostsSlidePanel";
+import { TopBrandsChart } from "@/components/TopBrandsChart";
 import { TopReactionsChart } from "@/components/TopReactionsChart";
 
 export function SignalsPage() {
@@ -15,10 +16,11 @@ export function SignalsPage() {
       <FilterPanel />
       <KpiCards />
       <div className="mt-4 flex gap-4 items-start">
-        {/* Left column: top reactions chart */}
+        {/* Left column: top reactions + top brands charts */}
         {!selectedPt && (
-          <div className="w-64 flex-shrink-0">
+          <div className="w-64 flex-shrink-0 space-y-4">
             <TopReactionsChart />
+            <TopBrandsChart />
           </div>
         )}
 

@@ -89,6 +89,14 @@ export function useTopReactions(f: Filters) {
   });
 }
 
+export function useTopBrands(f: Filters) {
+  return useQuery({
+    queryKey: ["top-brands", f],
+    queryFn: () => apiGet<BrandOut[]>("/top-brands", filtersToParams(f)),
+    staleTime: STALE,
+  });
+}
+
 export function useTrends() {
   return useQuery({
     queryKey: ["trends"],

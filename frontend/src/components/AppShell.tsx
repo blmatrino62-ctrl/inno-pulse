@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { logout } from "@/pages/LoginPage";
@@ -14,7 +14,24 @@ const TABS = [
 export function AppShell({ children }: { children: ReactNode }) {
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
-  const handleLogout = () => { logout(); navigate("/login", { replace: true }); };
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const handleLogout = () => {
+    setMenuOpen(false);
+    logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -72,13 +89,33 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             {theme === "dark" ? "☀️" : "🌙"}
           </button>
-          <button
-            onClick={handleLogout}
-            title="Выйти"
-            className="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-sm font-semibold hover:bg-blue-600 transition-colors"
-          >
-            IP
-          </button>
+
+          {/* Avatar with dropdown */}
+          <div ref={menuRef} className="relative">
+            <button
+              onClick={() => setMenuOpen((o) => !o)}
+              className="grid h-8 w-8 place-items-center rounded-full bg-blue-500 text-sm font-semibold hover:bg-blue-600 transition-colors"
+            >
+              IP
+            </button>
+            {menuOpen && (
+              <div
+                className="absolute right-0 top-10 w-44 rounded-xl border shadow-lg py-1 z-50"
+                style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+              >
+                <div className="px-3 py-2 border-b" style={{ borderColor: "var(--border)" }}>
+                  <p className="text-xs font-semibold">Demo User</p>
+                  <p className="text-[11px] muted">demo</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

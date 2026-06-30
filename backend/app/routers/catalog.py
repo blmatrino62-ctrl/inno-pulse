@@ -157,6 +157,29 @@ async def top_reactions(
     return [TopReaction(pt=r.pt, reaction_count=r.reaction_count) for r in rows]
 
 
+@router.get("/top-brands", response_model=list[BrandOut])
+async def top_brands(
+    db: AsyncSession = Depends(get_db),
+    f: CommonFilters = Depends(common_filters),
+) -> list[BrandOut]:
+    conds, params = build_conditions(f)
+    all_conds = [*conds, "drug_brand_name IS NOT NULL"]
+    where = where_from(all_conds)
+    rows = (
+        await db.execute(
+            text(f"""
+                SELECT drug_brand_name AS name, count(DISTINCT id) AS post_count
+                FROM {VIEW} {where}
+                GROUP BY drug_brand_name
+                ORDER BY post_count DESC
+                LIMIT 10
+            """),
+            params,
+        )
+    ).all()
+    return [BrandOut(name=r.name, post_count=r.post_count) for r in rows]
+
+
 @router.get("/trends", response_model=list[TrendPoint])
 async def get_trends(db: AsyncSession = Depends(get_db)) -> list[TrendPoint]:
     rows = (
