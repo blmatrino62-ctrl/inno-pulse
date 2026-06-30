@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { usePosts } from "@/api/hooks";
 import { useFilters } from "@/hooks/useFilters";
+import { isCritical } from "@/utils/criticalPts";
 import { QueryError } from "./ErrorBoundary";
 import { TableSkeleton } from "./ui/Skeleton";
 
@@ -68,10 +69,14 @@ export function ReviewsTab() {
               </tr>
             </thead>
             <tbody>
-              {data?.items.map((r) => (
+              {data?.items.map((r) => {
+                const serious = r.is_serious === "Yes";
+                const hasCritical = r.reactions.some((rx) => isCritical(rx));
+                const rowAlert = serious || hasCritical;
+                return (
                 <tr
                   key={r.id}
-                  className="border-b border-[var(--border)] hover:bg-[var(--surface-2)]"
+                  className={`border-b border-[var(--border)] ${rowAlert ? "bg-red-50/70 dark:bg-red-950/20 hover:bg-red-50 dark:hover:bg-red-950/30" : "hover:bg-[var(--surface-2)]"}`}
                 >
                   <td className="whitespace-nowrap px-3 py-2">{r.published_at}</td>
                   <td className="px-3 py-2 capitalize">{r.drug_ingredient ?? "—"}</td>
@@ -79,20 +84,26 @@ export function ReviewsTab() {
                   <td className="px-3 py-2">{r.source}</td>
                   <td className="px-3 py-2 uppercase">{r.language}</td>
                   <td className="px-3 py-2">
-                    {r.is_serious === "Yes" ? (
-                      <span className="text-amber-500">⚠ Yes</span>
+                    {serious ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/40 px-2 py-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400">
+                        ⚠ SAE
+                      </span>
                     ) : (
                       <span className="muted">—</span>
                     )}
                   </td>
-                  <td className="max-w-[180px] px-3 py-2">
+                  <td className="max-w-[200px] px-3 py-2">
                     <div className="flex flex-wrap gap-1">
                       {r.reactions.slice(0, 3).map((rxn, i) => (
                         <span
                           key={i}
-                          className="rounded bg-[var(--surface-2)] px-1.5 py-0.5 text-[10px]"
+                          className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                            isCritical(rxn)
+                              ? "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400"
+                              : "bg-[var(--surface-2)]"
+                          }`}
                         >
-                          {rxn}
+                          {isCritical(rxn) && "⚠ "}{rxn}
                         </span>
                       ))}
                       {r.reactions.length > 3 && (
@@ -106,7 +117,8 @@ export function ReviewsTab() {
                     <ExpandableText text={r.text} />
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

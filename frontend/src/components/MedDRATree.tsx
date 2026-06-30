@@ -4,6 +4,7 @@ import { useMedDRATree } from "@/api/hooks";
 import { TableSkeleton } from "@/components/ui/Skeleton";
 import { useFilters } from "@/hooks/useFilters";
 import type { SocNode } from "@/types";
+import { isCritical } from "@/utils/criticalPts";
 
 const SOC_COLORS = [
   "#8B5CF6",
@@ -154,21 +155,27 @@ export function MedDRATree({ selectedPt, onSelectPt }: Props) {
                         className={`w-full flex items-center gap-3 pl-10 pr-4 py-2 text-left transition-colors ${
                           isSelected
                             ? "bg-blue-50 dark:bg-blue-950/40"
+                            : isCritical(pt.pt)
+                            ? "bg-red-50/60 dark:bg-red-950/20 hover:bg-red-50 dark:hover:bg-red-950/30"
                             : "hover:bg-black/[0.03] dark:hover:bg-white/[0.04]"
                         }`}
                       >
-                        <span
-                          className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-                          style={{ background: color }}
-                        />
-                        <span className="text-sm flex-1 min-w-0 truncate">
+                        {isCritical(pt.pt) ? (
+                          <span className="text-red-500 text-xs flex-shrink-0">⚠</span>
+                        ) : (
+                          <span
+                            className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+                            style={{ background: color }}
+                          />
+                        )}
+                        <span className={`text-sm flex-1 min-w-0 truncate font-medium ${isCritical(pt.pt) ? "text-red-600 dark:text-red-400" : ""}`}>
                           {pt.pt}
                         </span>
                         <span
-                          className="text-[10px] muted border rounded px-1.5 py-0.5 flex-shrink-0"
-                          style={{ borderColor: "var(--border)" }}
+                          className={`text-[10px] border rounded px-1.5 py-0.5 flex-shrink-0 ${isCritical(pt.pt) ? "border-red-300 text-red-500" : "muted"}`}
+                          style={isCritical(pt.pt) ? {} : { borderColor: "var(--border)" }}
                         >
-                          PT
+                          {isCritical(pt.pt) ? "CRITICAL" : "PT"}
                         </span>
                         <div className="w-32 h-1 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0">
                           <div

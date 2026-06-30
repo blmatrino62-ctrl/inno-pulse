@@ -23,6 +23,7 @@ function ExpandablePostText({ text }: { text: string }) {
 import { apiGet, filtersToParams } from "@/api/client";
 import { useFilters } from "@/hooks/useFilters";
 import type { Page, PostRow } from "@/types";
+import { isCritical } from "@/utils/criticalPts";
 
 const SOURCE_ICON: Record<string, string> = {
   "Twitter/X": "𝕏",
@@ -31,12 +32,19 @@ const SOURCE_ICON: Record<string, string> = {
 };
 
 function PostCard({ post }: { post: PostRow }) {
+  const serious = post.is_serious === "Yes";
+  const hasCriticalRxn = post.reactions.some((r) => isCritical(r));
+  const alert = serious || hasCriticalRxn;
   return (
     <div
-      className="rounded-lg border p-3 space-y-1.5"
-      style={{ borderColor: "var(--border)", background: "var(--surface-2)" }}
+      className={`rounded-lg border p-3 space-y-1.5 ${alert ? "border-l-4 border-l-red-500" : ""}`}
+      style={{
+        borderColor: alert ? undefined : "var(--border)",
+        background: alert ? "var(--surface-2)" : "var(--surface-2)",
+        backgroundColor: alert ? "rgba(239,68,68,0.04)" : undefined,
+      }}
     >
-      <div className="flex items-center gap-2 text-xs muted">
+      <div className="flex items-center gap-2 text-xs muted flex-wrap">
         <span className="font-mono font-bold">
           {SOURCE_ICON[post.source] ?? post.source}
         </span>
@@ -45,9 +53,9 @@ function PostCard({ post }: { post: PostRow }) {
         <span>{post.published_at.slice(0, 10)}</span>
         <span>·</span>
         <span className="uppercase">{post.language}</span>
-        {post.is_serious === "Yes" && (
-          <span className="ml-auto rounded-full bg-red-500/10 px-2 py-0.5 text-red-500 font-medium">
-            ⚠ Serious
+        {serious && (
+          <span className="ml-auto rounded-full bg-red-100 dark:bg-red-900/40 px-2 py-0.5 text-red-600 dark:text-red-400 font-semibold">
+            ⚠ SAE
           </span>
         )}
       </div>
@@ -64,10 +72,14 @@ function PostCard({ post }: { post: PostRow }) {
           {post.reactions.slice(0, 4).map((r) => (
             <span
               key={r}
-              className="rounded-full border px-2 py-0.5 text-[11px]"
-              style={{ borderColor: "var(--border)" }}
+              className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+                isCritical(r)
+                  ? "border-red-300 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                  : ""
+              }`}
+              style={isCritical(r) ? {} : { borderColor: "var(--border)" }}
             >
-              {r}
+              {isCritical(r) && "⚠ "}{r}
             </span>
           ))}
           {post.reactions.length > 4 && (
