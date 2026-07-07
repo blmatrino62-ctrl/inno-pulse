@@ -8,9 +8,9 @@ class Settings(BaseSettings):
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
-    database_url: str = (
-        "postgresql+asyncpg://admin:admin123@15.237.137.224:5432/postgres"
-    )
+    # Real URL comes from backend/.env (local dev) or the DATABASE_URL
+    # env var set in docker-compose — never commit credentials here.
+    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     environment: str = "development"
 

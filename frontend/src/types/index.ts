@@ -1,5 +1,3 @@
-export type Severity = "mild" | "moderate" | "severe" | "extreme" | "lethal" | "unk";
-
 export interface Delta {
   value: number;
   direction: "up" | "down" | "flat";
@@ -16,21 +14,6 @@ export interface Kpi {
   unique_brands: number;
   meddra_pt_count: number;
   meddra_soc_count: number;
-}
-
-export interface AeRow {
-  id: number;
-  drug_ingredient: string | null;
-  drug_brand_name: string | null;
-  reaction: string | null;
-  meddra_pt: string | null;
-  meddra_soc: string | null;
-  severity: string | null;
-  is_serious: string;
-  language: string;
-  source: string;
-  published_at: string;
-  text: string | null;
 }
 
 export interface PostRow {

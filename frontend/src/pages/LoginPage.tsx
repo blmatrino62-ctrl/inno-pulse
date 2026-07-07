@@ -27,7 +27,7 @@ export function LoginPage() {
       localStorage.setItem(AUTH_KEY, "true");
       navigate("/reactions", { replace: true });
     } else {
-      setError("Неверный логин или пароль");
+      setError("Invalid username or password");
     }
   };
 
@@ -46,7 +46,7 @@ export function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs font-medium muted">Логин</label>
+            <label className="mb-1 block text-xs font-medium muted">Username</label>
             <input
               autoFocus
               value={user}
@@ -56,7 +56,7 @@ export function LoginPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium muted">Пароль</label>
+            <label className="mb-1 block text-xs font-medium muted">Password</label>
             <input
               type="password"
               value={pass}
@@ -76,7 +76,7 @@ export function LoginPage() {
             type="submit"
             className="w-full rounded-lg bg-blue-500 py-2.5 text-sm font-semibold text-white hover:bg-blue-600 transition-colors"
           >
-            Войти
+            Sign in
           </button>
         </form>
 

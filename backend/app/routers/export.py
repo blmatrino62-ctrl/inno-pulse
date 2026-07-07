@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
 from app.routers.filters import VIEW, CommonFilters, build_conditions, common_filters, where_from
+from app.schemas.common import _fix
 
 router = APIRouter(prefix="/api/export", tags=["export"])
 
@@ -36,6 +37,8 @@ async def export_csv(
     ).all()
 
     buf = io.StringIO()
+    # UTF-8 BOM so Excel detects the encoding
+    buf.write("﻿")
     writer = csv.writer(buf)
     writer.writerow([
         "Ingredient", "Brand", "Reaction", "MedDRA PT", "MedDRA SOC",
@@ -43,12 +46,12 @@ async def export_csv(
     ])
     for r in rows:
         writer.writerow([
-            r.drug_ingredient or "",
-            r.drug_brand_name or "",
-            r.reaction or "",
-            r.meddra_pt or "",
-            r.meddra_soc or "",
-            r.severity or "",
+            _fix(r.drug_ingredient or ""),
+            _fix(r.drug_brand_name or ""),
+            _fix(r.reaction or ""),
+            _fix(r.meddra_pt or ""),
+            _fix(r.meddra_soc or ""),
+            _fix(r.severity or ""),
             r.is_serious or "",
             r.language or "",
             r.source or "",
@@ -58,6 +61,6 @@ async def export_csv(
 
     return StreamingResponse(
         iter([buf.getvalue()]),
-        media_type="text/csv",
+        media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": "attachment; filename=inno-pulse-ae.csv"},
     )

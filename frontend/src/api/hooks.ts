@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type {
-  AeRow,
   BrandOut,
   Filters,
   IngredientOut,
@@ -21,18 +20,6 @@ export function useKpi(f: Filters) {
   return useQuery({
     queryKey: ["kpi", f],
     queryFn: () => apiGet<Kpi>("/kpi", filtersToParams(f)),
-    staleTime: STALE,
-  });
-}
-
-export function useReactions(f: Filters, page: number, pageSize = 50) {
-  return useQuery({
-    queryKey: ["reactions", f, page, pageSize],
-    queryFn: () =>
-      apiGet<Page<AeRow>>(
-        "/reactions",
-        filtersToParams(f, { page, page_size: pageSize }),
-      ),
     staleTime: STALE,
   });
 }

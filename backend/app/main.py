@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.database import get_db
 from app.routers import catalog, export, kpi, reviews, signals
 
 app = FastAPI(
@@ -26,5 +29,6 @@ app.include_router(export.router)
 
 
 @app.get("/api/health", tags=["health"])
-async def health() -> dict[str, str]:
+async def health(db: AsyncSession = Depends(get_db)) -> dict[str, str]:
+    await db.execute(text("SELECT 1"))
     return {"status": "ok", "schema": "social_adverse.v_ae_flat"}

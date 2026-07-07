@@ -62,46 +62,32 @@ async def get_kpi(
     reactions_per_post = round(ae_rows / unique_posts, 2) if unique_posts else 0.0
     serious_pct = round(float(row.serious_pct or 0), 1)
 
-    # --- AE rows trend (last 30d vs prior 30d) ---
-    cur_conds = [*conds, "published_at >= :cur_start"]
-    prev_conds = [*conds, "published_at >= :prev_start", "published_at < :cur_start"]
-
-    cur_ae = (
-        await db.scalar(
-            text(f"SELECT count(*) FROM {VIEW} {where_from(cur_conds)}"),
-            {**params, "cur_start": cur_start},
+    # --- Trends: last 30d vs prior 30d, one query via FILTER windows ---
+    trend_conds = [*conds, "published_at >= :prev_start"]
+    trend = (
+        await db.execute(
+            text(f"""
+                SELECT
+                    count(*) FILTER (WHERE published_at >= :cur_start)  AS cur_ae,
+                    count(*) FILTER (WHERE published_at <  :cur_start)  AS prev_ae,
+                    count(*) FILTER (WHERE is_serious = 'Yes'
+                                     AND published_at >= :cur_start) * 100.0
+                        / NULLIF(count(*) FILTER (WHERE published_at >= :cur_start), 0)
+                        AS serious_cur,
+                    count(*) FILTER (WHERE is_serious = 'Yes'
+                                     AND published_at < :cur_start) * 100.0
+                        / NULLIF(count(*) FILTER (WHERE published_at < :cur_start), 0)
+                        AS serious_prev
+                FROM {VIEW} {where_from(trend_conds)}
+            """),
+            {**params, "cur_start": cur_start, "prev_start": prev_start},
         )
-    ) or 0
+    ).one()
 
-    prev_ae = (
-        await db.scalar(
-            text(f"SELECT count(*) FROM {VIEW} {where_from(prev_conds)}"),
-            {**params, "prev_start": prev_start, "cur_start": cur_start},
-        )
-    ) or 0
-
-    # --- Serious % trend ---
-    async def serious_pct_window(extra_conds: list[str], extra_params: dict) -> float:
-        r = (
-            await db.execute(
-                text(f"""
-                    SELECT
-                        count(*) FILTER (WHERE is_serious = 'Yes') * 100.0
-                            / NULLIF(count(*), 0) AS pct
-                    FROM {VIEW} {where_from([*conds, *extra_conds])}
-                """),
-                {**params, **extra_params},
-            )
-        ).one()
-        return round(float(r.pct or 0), 1)
-
-    serious_cur = await serious_pct_window(
-        ["published_at >= :cur_start"], {"cur_start": cur_start}
-    )
-    serious_prev = await serious_pct_window(
-        ["published_at >= :prev_start", "published_at < :cur_start"],
-        {"prev_start": prev_start, "cur_start": cur_start},
-    )
+    cur_ae = int(trend.cur_ae or 0)
+    prev_ae = int(trend.prev_ae or 0)
+    serious_cur = round(float(trend.serious_cur or 0), 1)
+    serious_prev = round(float(trend.serious_prev or 0), 1)
 
     return KpiResponse(
         ae_rows=ae_rows,
