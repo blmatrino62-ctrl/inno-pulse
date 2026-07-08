@@ -56,6 +56,7 @@ async def get_anomalies(
             overall_pct_change=None,
             overall_is_spike=False,
             top_spikes=[],
+            series=[],
         )
 
     max_d: date = bounds.max_d
@@ -98,7 +99,7 @@ async def get_anomalies(
         )
     ).all()
 
-    spikes: list[PtAnomaly] = []
+    anomalies: list[PtAnomaly] = []
     for r in pt_rows:
         b_count = int(r.baseline_count or 0)
         r_count = int(r.recent_count or 0)
@@ -107,20 +108,25 @@ async def get_anomalies(
         b_rate = round(b_count / baseline_days, 4)
         r_rate = round(r_count / recent_days, 4)
         pct = _pct_change(b_rate, r_rate)
-        if pct is not None and pct >= threshold_pct:
-            spikes.append(
-                PtAnomaly(
-                    pt=r.meddra_pt,
-                    baseline_count=b_count,
-                    baseline_rate=b_rate,
-                    recent_count=r_count,
-                    recent_rate=r_rate,
-                    pct_change=pct,
-                    is_spike=True,
-                )
+        anomalies.append(
+            PtAnomaly(
+                pt=r.meddra_pt,
+                baseline_count=b_count,
+                baseline_rate=b_rate,
+                recent_count=r_count,
+                recent_rate=r_rate,
+                pct_change=pct,
+                is_spike=pct is not None and pct >= threshold_pct,
             )
+        )
 
-    spikes.sort(key=lambda s: -(s.pct_change or 0))
+    spikes = sorted(
+        (a for a in anomalies if a.is_spike),
+        key=lambda s: -(s.pct_change or 0),
+    )
+    # Combo chart needs the busiest reactions (spike or not), most recent
+    # activity first, so the baseline bars / recent line stay readable.
+    series = sorted(anomalies, key=lambda a: -a.recent_count)[:12]
 
     return AnomalyReport(
         window_days=window_days,
@@ -142,4 +148,5 @@ async def get_anomalies(
         overall_pct_change=overall_pct,
         overall_is_spike=overall_spike,
         top_spikes=spikes[:15],
+        series=series,
     )

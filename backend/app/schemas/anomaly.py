@@ -27,3 +27,6 @@ class AnomalyReport(FixedModel):
     overall_pct_change: float | None
     overall_is_spike: bool
     top_spikes: list[PtAnomaly]
+    # Top reactions by recent volume (spike or not) — for the combo chart:
+    # baseline_rate as bars, recent_rate as the overlay line.
+    series: list[PtAnomaly]

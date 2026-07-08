@@ -97,6 +97,7 @@ export interface AnomalyReport {
   overall_pct_change: number | null;
   overall_is_spike: boolean;
   top_spikes: PtAnomaly[];
+  series: PtAnomaly[];
 }
 
 export interface Page<T> {

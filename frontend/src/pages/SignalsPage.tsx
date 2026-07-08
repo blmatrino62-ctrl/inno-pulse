@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { AnomalyChart } from "@/components/AnomalyChart";
 import { BaselineBanner } from "@/components/BaselineBanner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FilterPanel } from "@/components/FilterPanel";
@@ -17,6 +18,11 @@ export function SignalsPage() {
       <BaselineBanner />
       <FilterPanel />
       <KpiCards />
+      {!selectedPt && (
+        <div className="mt-4">
+          <AnomalyChart />
+        </div>
+      )}
       <div className="mt-4 flex gap-4 items-start">
         {/* Left column: top reactions + top brands charts */}
         {!selectedPt && (
