@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.database import get_db
-from app.routers import catalog, export, kpi, reviews, signals
+from app.routers import anomalies, catalog, export, kpi, reviews, signals
 
 app = FastAPI(
     title="Inno-Pulse API",
@@ -26,6 +26,7 @@ app.include_router(signals.router)
 app.include_router(reviews.router)
 app.include_router(catalog.router)
 app.include_router(export.router)
+app.include_router(anomalies.router)
 
 
 @app.get("/api/health", tags=["health"])

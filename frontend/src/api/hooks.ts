@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import type {
+  AnomalyReport,
   BrandOut,
   Filters,
   IngredientOut,
@@ -89,5 +90,17 @@ export function useTrends() {
     queryKey: ["trends"],
     queryFn: () => apiGet<TrendPoint[]>("/trends"),
     staleTime: 5 * 60_000,
+  });
+}
+
+export function useAnomalies(f: Filters, windowDays = 30, thresholdPct = 50) {
+  return useQuery({
+    queryKey: ["anomalies", f, windowDays, thresholdPct],
+    queryFn: () =>
+      apiGet<AnomalyReport>(
+        "/anomalies",
+        filtersToParams(f, { window_days: windowDays, threshold_pct: thresholdPct }),
+      ),
+    staleTime: STALE,
   });
 }

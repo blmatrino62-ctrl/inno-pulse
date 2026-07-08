@@ -1,5 +1,8 @@
 import { useState } from "react";
 
+import { useAnomalies } from "@/api/hooks";
+import { EMPTY_FILTERS } from "@/types";
+
 function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
   return (
     <button
@@ -68,8 +71,13 @@ export function NotificationsPage() {
   const [saeAlert, setSaeAlert] = useState(true);
   const [smsEscalation, setSmsEscalation] = useState(false);
   const [spikeDetection, setSpikeDetection] = useState(true);
-  const [spikeThreshold, setSpikeThreshold] = useState(200);
-  const [spikeWindow, setSpikeWindow] = useState("24 hours");
+  const [spikeThreshold, setSpikeThreshold] = useState(50);
+  const [spikeWindowDays, setSpikeWindowDays] = useState(30);
+  const { data: anomalies, isLoading: anomaliesLoading } = useAnomalies(
+    EMPTY_FILTERS,
+    spikeWindowDays,
+    spikeThreshold,
+  );
   const [dailyDigest, setDailyDigest] = useState(true);
   const [dailyTime, setDailyTime] = useState("09:00");
   const [weeklyReport, setWeeklyReport] = useState(true);
@@ -128,30 +136,87 @@ export function NotificationsPage() {
       <Section color="amber" icon="📈" title="Anomaly monitoring (Safety signals)">
         <SettingRow
           title="Automatic spike detection"
-          description="Detect deviations from historical averages across all tracked reactions."
+          description="Compares the most recent window of mentions against the full historical dataset, which serves as the baseline reference. As new mentions arrive, they replace the 'recent' side of this comparison automatically."
         >
           <Toggle on={spikeDetection} onChange={setSpikeDetection} />
         </SettingRow>
         {spikeDetection && (
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="muted text-xs">Flag as anomaly when reaction mentions increase by</span>
-            <input
-              type="number"
-              value={spikeThreshold}
-              onChange={(e) => setSpikeThreshold(Number(e.target.value))}
-              className="w-20 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-center text-sm"
-            />
-            <span className="muted text-xs">% over the last</span>
-            <select
-              value={spikeWindow}
-              onChange={(e) => setSpikeWindow(e.target.value)}
-              className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs"
-            >
-              {["1 hour", "6 hours", "24 hours", "7 days"].map((o) => (
-                <option key={o}>{o}</option>
-              ))}
-            </select>
-          </div>
+          <>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="muted text-xs">Flag as anomaly when mentions/day rise by</span>
+              <input
+                type="number"
+                value={spikeThreshold}
+                onChange={(e) => setSpikeThreshold(Number(e.target.value))}
+                className="w-20 rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-center text-sm"
+              />
+              <span className="muted text-xs">% over the last</span>
+              <select
+                value={spikeWindowDays}
+                onChange={(e) => setSpikeWindowDays(Number(e.target.value))}
+                className="rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs"
+              >
+                {[7, 14, 30, 60, 90].map((d) => (
+                  <option key={d} value={d}>{d} days</option>
+                ))}
+              </select>
+              <span className="muted text-xs">vs the baseline</span>
+            </div>
+
+            <div className="rounded-lg border border-amber-200 dark:border-amber-800/40 bg-white/50 dark:bg-black/10 p-3">
+              {anomaliesLoading ? (
+                <p className="muted text-xs">Computing baseline…</p>
+              ) : !anomalies || anomalies.baseline.mentions === 0 ? (
+                <p className="muted text-xs">No data available.</p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
+                    <span className="muted">
+                      Baseline ({anomalies.baseline.days}d): <b className="text-[var(--text)]">{anomalies.baseline.mentions}</b> mentions · {anomalies.baseline.rate_per_day}/day
+                    </span>
+                    <span className="muted">
+                      Recent ({anomalies.recent.days}d): <b className="text-[var(--text)]">{anomalies.recent.mentions}</b> mentions · {anomalies.recent.rate_per_day}/day
+                    </span>
+                    <span
+                      className={`font-semibold ${
+                        anomalies.overall_is_spike
+                          ? "text-red-600"
+                          : (anomalies.overall_pct_change ?? 0) < 0
+                          ? "text-emerald-600"
+                          : "muted"
+                      }`}
+                    >
+                      {anomalies.overall_pct_change === null
+                        ? "n/a"
+                        : `${anomalies.overall_pct_change > 0 ? "+" : ""}${anomalies.overall_pct_change}%`}{" "}
+                      overall
+                    </span>
+                  </div>
+
+                  {anomalies.top_spikes.length > 0 ? (
+                    <div className="mt-2 space-y-1 border-t border-amber-200 dark:border-amber-800/40 pt-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide muted">
+                        Reactions exceeding threshold
+                      </p>
+                      {anomalies.top_spikes.map((s) => (
+                        <div key={s.pt} className="flex items-center justify-between text-xs">
+                          <span className="font-medium">⚠ {s.pt}</span>
+                          <span className="muted">
+                            {s.baseline_count} → {s.recent_count} mentions{" "}
+                            <b className="text-red-500">+{s.pct_change}%</b>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-emerald-600">
+                      No reactions currently exceed the {spikeThreshold}% threshold.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </>
         )}
       </Section>
 

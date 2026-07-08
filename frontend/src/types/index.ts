@@ -71,6 +71,34 @@ export interface TrendPoint {
   count: number;
 }
 
+export interface PeriodStats {
+  date_from: string;
+  date_to: string;
+  days: number;
+  mentions: number;
+  rate_per_day: number;
+}
+
+export interface PtAnomaly {
+  pt: string;
+  baseline_count: number;
+  baseline_rate: number;
+  recent_count: number;
+  recent_rate: number;
+  pct_change: number | null;
+  is_spike: boolean;
+}
+
+export interface AnomalyReport {
+  window_days: number;
+  threshold_pct: number;
+  baseline: PeriodStats;
+  recent: PeriodStats;
+  overall_pct_change: number | null;
+  overall_is_spike: boolean;
+  top_spikes: PtAnomaly[];
+}
+
 export interface Page<T> {
   items: T[];
   total: number;

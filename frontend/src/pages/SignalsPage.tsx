@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { BaselineBanner } from "@/components/BaselineBanner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FilterPanel } from "@/components/FilterPanel";
 import { KpiCards } from "@/components/KpiCards";
@@ -13,6 +14,7 @@ export function SignalsPage() {
 
   return (
     <ErrorBoundary>
+      <BaselineBanner />
       <FilterPanel />
       <KpiCards />
       <div className="mt-4 flex gap-4 items-start">
